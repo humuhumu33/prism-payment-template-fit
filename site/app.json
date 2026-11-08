@@ -72,14 +72,14 @@
   ],
   "attestations": {
     "proof": {
-      "id": "not recorded for the template's own app; an instance records the UOR MCP server's attestation here",
-      "url": "https://github.com/UOR-Foundation/template/actions/workflows/bootstrap.yml"
+      "id": "57bf066e44c622a5a7ac8a678ce25066a87f5302901f08cbd7c6f2b1775c02a5",
+      "url": "https://github.com/humuhumu33/prism-payment-template-fit/actions/workflows/bootstrap.yml"
     },
     "build": {
-      "id": "printed by prismpm verify in every pages run; an instance records it here",
-      "url": "https://github.com/UOR-Foundation/template/actions/workflows/pages.yml"
+      "id": "printed by prismpm verify in every pages run",
+      "url": "https://github.com/humuhumu33/prism-payment-template-fit/actions/workflows/pages.yml"
     }
   },
-  "repository": "https://github.com/UOR-Foundation/template",
-  "report": "https://github.com/UOR-Foundation/template/blob/main/TEMPLATE-VERIFICATION.md"
+  "repository": "https://github.com/humuhumu33/prism-payment-template-fit",
+  "report": "https://github.com/humuhumu33/prism-payment-template-fit/blob/main/TEMPLATE-VERIFICATION.md"
 }
