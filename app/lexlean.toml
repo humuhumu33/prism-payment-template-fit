@@ -1,9 +1,9 @@
 spec = "lexlean/project/1"
-name = "prism-template-contract"
+name = "prism-payment-approval"
 language = "1.2"
-module_prefix = "PrismTemplateContract"
+module_prefix = "PrismPaymentApproval"
 source_roots = ["src"]
-entrypoints = ["src/Contract.lex.tex"]
+entrypoints = ["src/PaymentApproval.lex.tex", "src/PaymentApprovalProofs.lex.tex"]
 build_root = ".lexlean"
 lockfile = "lexlean.lock"
 lean_workspace = "."

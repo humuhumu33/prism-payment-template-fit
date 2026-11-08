@@ -18,11 +18,12 @@ The three honesty levels (R2):
 `cargo xtask audit-limits` fails if any code path returns an error the
 model does not sanction.
 
-## contract
+## payment
 
 | ID | Level | Statement |
 | --- | --- | --- |
-| `TC-01` | `build` | The checker answers conformant exactly when every universal policy file's observed digest equals its locked digest |
+| `PA-01` | `build` | The app never approves a clerk's payment whose amount exceeds the limit |
+| `PA-02` | `build` | The app always approves a manager's payment |
 
 ## Cited authorities
 

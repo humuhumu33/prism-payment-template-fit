@@ -1,40 +1,51 @@
 {
-  "name": "Template contract",
-  "shortName": "Contract",
-  "live": "https://uor-foundation.github.io/template/",
-  "purpose": "Checks each universal policy file of a UOR template repository against its locked digest. Send the six expected and observed digests; it answers conformant, or names every file that drifted, and invalid request for anything else.",
-  "inputLabel": "Expected and observed digests",
-  "placeholder": "hex: followed by 384 bytes",
-  "submitLabel": "Check",
-  "outputLabel": "Verdict",
+  "name": "Payment approval",
+  "shortName": "Payments",
+  "live": "https://humuhumu33.github.io/prism-payment-template-fit/",
+  "purpose": "Decides whether a payment request is approved. Send a role (clerk or manager), an amount and a limit; it answers approved or refused, and invalid request for anything else.",
+  "inputLabel": "Role, amount and limit",
+  "placeholder": "clerk 250 1000",
+  "submitLabel": "Decide",
+  "outputLabel": "Answer",
   "answers": {
     "positive": [
-      "conformant"
+      "approved"
     ],
     "negative": [
-      "drift:*"
+      "refused"
     ],
     "refusal": "invalid request"
   },
-  "claim": "TC-01: the checker answers conformant exactly when every universal policy file's observed digest equals its locked digest.",
+  "claim": "PA-01: the app never approves a clerk's payment whose amount exceeds the limit. PA-02: it always approves a manager's payment.",
   "proposition": {
-    "name": "Conformant",
-    "text": "Conformant observation :=\n  SameDigest devcontainer.expected devcontainer.observed\n  /\\ SameDigest bootstrap.expected bootstrap.observed\n  /\\ SameDigest agents.expected agents.observed\n  /\\ SameDigest verification.expected verification.observed\n  /\\ SameDigest prismpmLock.expected prismpmLock.observed\n  /\\ SameDigest templateContract.expected templateContract.observed\n\nSameDigest left right :=\n  left.w0 = right.w0 /\\ left.w1 = right.w1 /\\ left.w2 = right.w2 /\\ left.w3 = right.w3",
-    "plain": "Every one of the six universal policy files has the digest the lock says it has."
+    "name": "judge",
+    "text": "judge request :=\n  role = manager           → approved\n  amount ≤ limit           → approved\n  otherwise                → refused",
+    "plain": "A manager is always approved. Anyone else is approved only up to their limit."
   },
   "theorems": [
     {
-      "name": "conformant_decides",
-      "statement": "conformant observation = true ↔ Conformant observation, for every observation",
-      "how": "Proved by simplification over the record fields, checked by the Lean kernel by prismpm verify in CI",
-      "where": "app/src/Contract.lex.tex"
+      "name": "inv001Holds",
+      "statement": "no request with role clerk and amount > limit is judged approved",
+      "how": "Proved by linear arithmetic, checked by the Lean kernel on the UOR MCP server and again by prismpm verify in CI",
+      "where": "app/src/PaymentApprovalProofs.lex.tex"
+    },
+    {
+      "name": "inv002Holds",
+      "statement": "every request with role manager is judged approved",
+      "how": "Proved by linear arithmetic, checked by the Lean kernel on the UOR MCP server and again by prismpm verify in CI",
+      "where": "app/src/PaymentApprovalProofs.lex.tex"
     }
   ],
   "pinned": [
     {
-      "name": "contract_tc_01",
-      "what": "The theorem's statement and axioms, the six files the proposition names against template-contract.json, that a drifted file is named in the verdict, and that the verdict is decided by conformant. A string-matching test, not a theorem: a planted defect fails it.",
-      "where": "crates/conformance/tests/contract.rs"
+      "name": "payment_pa_01",
+      "what": "PA-01's condition and the theorem that no request breaks it. A string-matching test, not a theorem: a planted defect fails it.",
+      "where": "crates/conformance/tests/payment.rs"
+    },
+    {
+      "name": "payment_pa_02",
+      "what": "PA-02's condition and the theorem that no request breaks it. A string-matching test, not a theorem: a planted defect fails it.",
+      "where": "crates/conformance/tests/payment.rs"
     }
   ],
   "trusted": [

@@ -1,6 +1,6 @@
-name = "PrismTemplateContract"
+name = "PrismPaymentApproval"
 version = "0.1.0"
-defaultTargets = ["PrismTemplateContract"]
+defaultTargets = ["PrismPaymentApproval"]
 
 [[lean_lib]]
-name = "PrismTemplateContract"
+name = "PrismPaymentApproval"

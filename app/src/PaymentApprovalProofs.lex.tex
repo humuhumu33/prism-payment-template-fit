@@ -1,0 +1,60 @@
+\begin{lexlean}{PaymentApprovalProofs}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{PaymentApproval}
+\title{Text application model}
+\begin{semanticmodule}
+definition{
+  name: breaksInv001,
+  parameters: [request : PaymentApproval::Request],
+  result: Bool,
+  body: ((((1 <=? (project request amount)) && ((project request role) =? (PaymentApproval::roleClerk))) && ((project request limit) <? (project request amount))) && ((PaymentApproval::judge request) =? (PaymentApproval::answerApproved)))
+}
+
+theorem{
+  name: inv001Holds,
+  parameters: [request : PaymentApproval::Request],
+  statement: ((breaksInv001 request) = false),
+  proof: linear_arithmetic{
+    definitions: [
+      PaymentApproval::answerApproved,
+      PaymentApproval::answerRefused,
+      PaymentApproval::judge,
+      PaymentApproval::roleClerk,
+      PaymentApproval::roleManager,
+      PaymentApproval::rule1,
+      PaymentApproval::rule2,
+      breaksInv001
+    ]
+  },
+  axioms: [Quot.sound, propext]
+}
+
+definition{
+  name: breaksInv002,
+  parameters: [request : PaymentApproval::Request],
+  result: Bool,
+  body: (((1 <=? (project request amount)) && ((project request role) =? (PaymentApproval::roleManager))) && (not ((PaymentApproval::judge request) =? (PaymentApproval::answerApproved))))
+}
+
+theorem{
+  name: inv002Holds,
+  parameters: [request : PaymentApproval::Request],
+  statement: ((breaksInv002 request) = false),
+  proof: linear_arithmetic{
+    definitions: [
+      PaymentApproval::answerApproved,
+      PaymentApproval::answerRefused,
+      PaymentApproval::judge,
+      PaymentApproval::roleClerk,
+      PaymentApproval::roleManager,
+      PaymentApproval::rule1,
+      PaymentApproval::rule2,
+      breaksInv002
+    ]
+  },
+  axioms: [Quot.sound, propext]
+}
+\end{semanticmodule}
+\end{lexlean}
