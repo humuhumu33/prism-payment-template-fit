@@ -1,0 +1,453 @@
+/* The standard Prism app page, bound to the Hologram brand kit.
+ * Every colour, radius, border, ring, duration and easing is a variable from
+ * brand/hologram-warm.css; the fonts and their metric-matched fallbacks come
+ * from brand/fonts.css, both pinned by brand.lock. The type scale is the
+ * brand's: 14, 16, 18, 20, 24, 30, 36 px, nothing under 14. No shadows on the
+ * dark ground.
+ *
+ * Layout follows the Material 3 window size classes: compact under 600 px
+ * (one column, 16 px margins), medium 600 to 840 (one column, 24 px margins),
+ * expanded and up from 840 (two panes, 24 px apart). Touch targets are 48 px
+ * on coarse pointers and 36 px controls on fine ones. */
+
+:root {
+  --text-14: 0.875rem;
+  --text-16: 1rem;
+  --text-18: 1.125rem;
+  --text-20: 1.25rem;
+  --text-24: 1.5rem;
+  --text-30: 1.875rem;
+  --text-36: 2.25rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --margin: 1rem;
+  --measure: 45rem;
+  --measure-wide: 80rem;
+  --column: var(--measure);
+  --control: 2.25rem;
+  /* The frame's bar: 32 px controls and the thin chrome above and below
+   * them, the same height on every device (its controls take a 48 px tap
+   * past their circles on a touch screen). */
+  --frame-bar: 2.875rem;
+  --touch: 3rem;
+  --radius-control: calc(var(--radius) - 2px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+@media (min-width: 600px) {
+  :root { --margin: 1.5rem; }
+}
+
+* { box-sizing: border-box; }
+
+html { background: var(--background); }
+
+body {
+  margin: 0;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-sans);
+  font-size: var(--text-16);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* The column: the frame's contents and main share one width and one margin. */
+main {
+  width: min(100% - 2 * var(--margin) - var(--safe-left) - var(--safe-right), var(--column));
+  margin: 0 auto;
+}
+
+/* The top bar holds the safe area, so main starts below it. */
+main { padding: var(--space-6) 0 calc(var(--space-12) + var(--safe-bottom)); }
+
+@media (min-width: 600px) {
+  main { padding-top: var(--space-8); }
+}
+
+/* Expanded width and up: two panes, identity and proof beside try and examples. */
+@media (min-width: 840px) {
+  :root { --column: var(--measure-wide); }
+  .panes {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-6);
+    align-items: start;
+  }
+}
+
+/* Compact height, a phone in landscape: a shorter header, nothing sticky. */
+@media (max-height: 480px) {
+  main { padding-top: var(--space-4); }
+  .intro { margin-bottom: var(--space-4); }
+  .lede { display: none; }
+}
+
+::selection { background: var(--brand); color: var(--brand-foreground); }
+
+:focus-visible {
+  outline: var(--ring-width) solid var(--ring);
+  outline-offset: var(--ring-offset);
+}
+
+/* The frame: the top bar is the canonical <prism-frame>, loaded live from
+ * the template (site/app.mjs), and drawn in its own shadow root. Until it
+ * arrives its height is reserved and the app's holo:// address stands in,
+ * so nothing moves when it does. */
+prism-frame {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  min-height: calc(var(--safe-top) + var(--frame-bar));
+}
+/* Between Prism apps the page changes and the frame stays: a navigation is
+ * a short cross-fade of the window, with the bar held in place, as a
+ * browser switches tabs. Every page paints the real bar first (the frame's
+ * shell, written in by bootstrap/page.mjs), so the bar is the same on both
+ * sides and only its address and the app beneath it change. */
+@view-transition { navigation: auto; }
+prism-frame { view-transition-name: prism-frame; }
+/* The page's colour scheme, which the frame's first paint follows. */
+:root { color-scheme: light; }
+:root.dark { color-scheme: dark; }
+::view-transition-group(*) { animation-duration: 160ms; animation-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+}
+prism-frame:not(:defined):not([data-shell]) {
+  padding-top: var(--safe-top);
+  background: var(--sidebar);
+}
+/* The stand-in, until the frame's module arrives: the bar as it will be, the
+ * Hologram mark and the address in its field, at the bar's height, so the
+ * frame replaces it without anything moving and the page's first load stays
+ * light (the frame is not written into the page). */
+.frame-fallback {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  min-height: var(--frame-bar);
+  padding: 0.5rem calc(0.5rem + var(--safe-right)) 0.375rem calc(0.5rem + var(--safe-left));
+  color: var(--foreground);
+  font-size: var(--text-14);
+  font-weight: 500;
+  text-decoration: none;
+}
+.frame-fallback .mark {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  background: currentColor;
+  /* The Hologram mark (site/favicon.svg), inline: no request on first load. */
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-104 -104 208 208' role='img' aria-label='Hologram'%3E%3Cstyle%3Ecircle{fill:%23f6f5f4}@media (prefers-color-scheme:light){circle{fill:%23302b28}}%3C/style%3E%3Cg%3E%3Ccircle cx='0.20' cy='-97.39' r='2.61'/%3E%3Ccircle cx='-22.86' cy='-86.55' r='2.71'/%3E%3Ccircle cx='22.54' cy='-86.32' r='2.81'/%3E%3Ccircle cx='-0.03' cy='-76.01' r='2.71'/%3E%3Ccircle cx='45.26' cy='-75.92' r='7.80'/%3E%3Ccircle cx='-45.82' cy='-75.86' r='2.61'/%3E%3Ccircle cx='68.34' cy='-65.13' r='7.70'/%3E%3Ccircle cx='-68.83' cy='-65.00' r='2.61'/%3E%3Ccircle cx='-22.91' cy='-64.90' r='2.61'/%3E%3Ccircle cx='22.71' cy='-64.88' r='2.51'/%3E%3Ccircle cx='91.24' cy='-54.34' r='2.61'/%3E%3Ccircle cx='-45.94' cy='-54.25' r='7.83'/%3E%3Ccircle cx='-91.17' cy='-54.19' r='2.71'/%3E%3Ccircle cx='-0.03' cy='-54.19' r='2.71'/%3E%3Ccircle cx='45.35' cy='-54.19' r='7.80'/%3E%3Ccircle cx='-22.86' cy='-43.64' r='2.71'/%3E%3Ccircle cx='22.71' cy='-43.49' r='2.51'/%3E%3Ccircle cx='68.29' cy='-43.47' r='7.73'/%3E%3Ccircle cx='-68.60' cy='-43.37' r='7.73'/%3E%3Ccircle cx='-45.85' cy='-32.63' r='7.77'/%3E%3Ccircle cx='45.36' cy='-32.60' r='7.80'/%3E%3Ccircle cx='-91.26' cy='-32.55' r='2.71'/%3E%3Ccircle cx='0.10' cy='-32.51' r='2.61'/%3E%3Ccircle cx='91.24' cy='-32.51' r='2.61'/%3E%3Ccircle cx='68.22' cy='-21.95' r='7.83'/%3E%3Ccircle cx='22.67' cy='-21.84' r='7.87'/%3E%3Ccircle cx='-22.86' cy='-21.82' r='2.71'/%3E%3Ccircle cx='-68.57' cy='-21.80' r='7.80'/%3E%3Ccircle cx='45.45' cy='-11.06' r='7.73'/%3E%3Ccircle cx='-0.19' cy='-11.04' r='7.87'/%3E%3Ccircle cx='91.35' cy='-11.01' r='2.81'/%3E%3Ccircle cx='-91.54' cy='-10.97' r='2.51'/%3E%3Ccircle cx='-45.87' cy='-10.87' r='7.73'/%3E%3Ccircle cx='22.71' cy='-0.27' r='8.06'/%3E%3Ccircle cx='-22.89' cy='-0.21' r='7.90'/%3E%3Ccircle cx='68.28' cy='-0.15' r='7.87'/%3E%3Ccircle cx='-68.62' cy='-0.11' r='8.00'/%3E%3Ccircle cx='-0.06' cy='10.98' r='7.87'/%3E%3Ccircle cx='45.54' cy='11.00' r='7.83'/%3E%3Ccircle cx='-45.85' cy='11.02' r='7.77'/%3E%3Ccircle cx='-91.26' cy='11.10' r='2.71'/%3E%3Ccircle cx='91.24' cy='11.13' r='2.61'/%3E%3Ccircle cx='22.71' cy='21.64' r='2.71'/%3E%3Ccircle cx='-68.74' cy='21.66' r='7.87'/%3E%3Ccircle cx='-22.86' cy='21.67' r='7.87'/%3E%3Ccircle cx='68.28' cy='21.67' r='7.87'/%3E%3Ccircle cx='-91.54' cy='32.46' r='2.61'/%3E%3Ccircle cx='0.15' cy='32.46' r='2.71'/%3E%3Ccircle cx='-45.72' cy='32.50' r='7.73'/%3E%3Ccircle cx='45.54' cy='32.59' r='7.83'/%3E%3Ccircle cx='91.35' cy='32.63' r='2.81'/%3E%3Ccircle cx='-23.01' cy='43.23' r='2.61'/%3E%3Ccircle cx='68.25' cy='43.31' r='7.83'/%3E%3Ccircle cx='-68.71' cy='43.34' r='7.83'/%3E%3Ccircle cx='22.71' cy='43.37' r='2.90'/%3E%3Ccircle cx='91.39' cy='53.92' r='2.71'/%3E%3Ccircle cx='45.48' cy='53.95' r='7.87'/%3E%3Ccircle cx='-45.86' cy='53.97' r='7.80'/%3E%3Ccircle cx='-91.34' cy='53.99' r='2.61'/%3E%3Ccircle cx='0.20' cy='54.09' r='2.61'/%3E%3Ccircle cx='-68.57' cy='64.90' r='7.80'/%3E%3Ccircle cx='-22.86' cy='64.92' r='2.71'/%3E%3Ccircle cx='68.28' cy='64.92' r='2.71'/%3E%3Ccircle cx='22.54' cy='65.15' r='2.81'/%3E%3Ccircle cx='-45.88' cy='75.56' r='7.80'/%3E%3Ccircle cx='0.10' cy='75.62' r='2.61'/%3E%3Ccircle cx='45.32' cy='75.62' r='2.61'/%3E%3Ccircle cx='22.53' cy='86.47' r='2.71'/%3E%3Ccircle cx='-22.86' cy='86.75' r='2.71'/%3E%3Ccircle cx='-0.03' cy='97.29' r='2.71'/%3E%3C/g%3E%3C/svg%3E") center / 1.25rem no-repeat;
+}
+.frame-fallback .field {
+  flex: 1 1 10rem;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  height: 2rem;
+  padding: 0 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: light-dark(var(--card), color-mix(in oklab, var(--sidebar), var(--foreground) 3%));
+  overflow: hidden;
+  white-space: nowrap;
+}
+.frame-fallback .scheme { color: var(--muted-foreground); font-weight: 400; }
+@media (max-height: 480px) { prism-frame { position: static; } }
+
+/* A jump to the identity card lands below the bar, not under it. */
+html { scroll-padding-top: calc(var(--safe-top) + var(--frame-bar) + var(--space-4)); }
+@media (max-height: 480px) { html { scroll-padding-top: 0; } }
+
+/* Header */
+
+.intro { margin-bottom: var(--space-6); }
+
+h1 {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-36);
+  line-height: 1.1;
+  letter-spacing: var(--tracking-display);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 599px) { h1 { font-size: var(--text-30); } }
+
+/* The brand accent appears once per view: the mark in the top bar. */
+.dot {
+  flex: none;
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: 50%;
+  background: var(--brand);
+}
+
+.lede { margin: 0; max-width: 62ch; color: var(--muted-foreground); font-size: var(--text-18); }
+
+/* Cards */
+
+.card {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+@media (min-width: 600px) { .card { padding: var(--space-6); } }
+
+/* Immersive: the cards are frosted glass over the photo behind the page. */
+html.immersive .card {
+  background: color-mix(in oklab, var(--card) 76%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+
+h2 {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-20);
+  letter-spacing: var(--tracking-display);
+}
+
+.muted { color: var(--muted-foreground); }
+
+.label {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-14);
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+/* Monospace text is one weight, so a page loads one mono face: Geist Mono
+ * Medium (7.6 KB) would be the first load's largest optional cost. */
+code, pre, .mono, .hash {
+  font-family: var(--font-mono);
+  font-size: var(--text-14);
+  font-weight: 400;
+}
+
+code { overflow-wrap: anywhere; }
+
+pre {
+  margin: 0 0 var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--muted);
+  border-radius: var(--radius-control);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.hash { overflow-wrap: anywhere; color: var(--foreground); text-decoration: none; }
+a.hash { text-decoration: underline; text-decoration-color: var(--border-strong); text-underline-offset: 0.2em; }
+a.hash:hover { color: var(--link-hover); }
+
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin: 0; }
+
+/* Facts */
+
+.facts { display: grid; gap: var(--space-4); margin: 0; }
+.facts div { display: grid; gap: var(--space-1); }
+.facts dt { font-size: var(--text-14); font-weight: 500; color: var(--muted-foreground); }
+.facts dd { margin: 0; }
+
+/* Chips carry state. Success for a passing check, warning for a refused
+ * request (the app answered correctly) and for an update, destructive for a
+ * failure. */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-control);
+  border: var(--border-width) solid var(--border);
+  font-family: var(--font-mono);
+  font-size: var(--text-14);
+  font-weight: 400;
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.chip-wait { background: var(--muted); color: var(--muted-foreground); }
+.chip-good { background: var(--success-subtle); color: var(--success); border-color: var(--success-border); }
+.chip-warn { background: var(--warning-subtle); color: var(--warning); border-color: var(--warning-border); }
+.chip-bad { background: var(--destructive-subtle); color: var(--destructive); border-color: var(--destructive-border); }
+.chip[hidden] { display: none; }
+
+/* On paper, the kit's success and destructive text on their subtle grounds
+ * measures under 4.5:1 at 14 px (4.38 and about 4.0), so the chips take the
+ * card as their ground there and keep the coloured hairline. */
+html:not(.dark) .chip-good, html:not(.dark) .chip-bad { background: var(--card); }
+
+/* Space reserved for what the holo fills in after it loads, so nothing shifts. */
+.reserve-1 { display: block; min-height: 1.5rem; }
+.reserve-2 { display: block; flex: 1 0 100%; min-height: 2.625rem; }
+@media (max-width: 599px) { .reserve-1 { min-height: 3rem; } }
+
+/* Controls: 36px on a fine pointer, 48px on a coarse one, radius one step
+ * under the surface, hairline, no shadow. */
+
+button, input, .ghost {
+  font: inherit;
+  font-size: var(--text-14);
+}
+
+button {
+  min-height: var(--control);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-control);
+  border: var(--border-width) solid var(--border);
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), border-color var(--duration) var(--ease);
+}
+button:hover { background: var(--accent); }
+button:active { background: var(--accent-pressed); }
+button:disabled { cursor: default; color: var(--muted-foreground); }
+
+button.primary { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
+button.primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+
+button.bare { min-height: auto; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; }
+
+.ghost, button.ghost {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-control);
+  border: var(--border-width) solid transparent;
+  background: transparent;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  font-weight: 500;
+}
+.ghost:hover, button.ghost:hover { background: var(--accent); color: var(--accent-foreground); }
+
+
+input[type="text"] {
+  flex: 1 1 14rem;
+  min-width: 0;
+  min-height: var(--control);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-control);
+  border: var(--border-width) solid var(--input);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: var(--text-16);
+}
+input[type="text"]::placeholder { color: var(--muted-foreground); }
+
+.try label { display: block; margin-bottom: var(--space-2); font-size: var(--text-14); font-weight: 500; color: var(--muted-foreground); }
+.hint { margin: var(--space-2) 0 0; font-size: var(--text-14); }
+.answer { margin-top: var(--space-4); }
+.answer p { margin: 0 0 var(--space-2); }
+
+/* Proved */
+
+.claim { margin: 0 0 var(--space-4); font-size: var(--text-18); }
+.proposition { margin-bottom: var(--space-4); }
+.proposition p:last-child { margin: 0; font-size: var(--text-14); }
+
+.list { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--space-2); }
+.list li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3); align-items: start; }
+.list .tick { color: var(--success); font-weight: 500; }
+.list .pin { color: var(--muted-foreground); font-weight: 500; }
+.list .name { font-family: var(--font-mono); font-size: var(--text-14); overflow-wrap: anywhere; }
+.list .what { font-size: var(--text-14); color: var(--muted-foreground); overflow-wrap: anywhere; }
+
+.disclosure { margin-top: var(--space-4); border-top: var(--border-width) solid var(--border); padding-top: var(--space-3); }
+.disclosure summary { cursor: pointer; font-size: var(--text-14); font-weight: 500; color: var(--muted-foreground); min-height: var(--control); display: flex; align-items: center; }
+.disclosure[open] summary { margin-bottom: var(--space-3); }
+
+/* Examples: a table from medium width up, a two-line list on a compact one. */
+
+.examples { width: 100%; border-collapse: collapse; margin-top: var(--space-4); }
+.examples th {
+  text-align: start;
+  font-size: var(--text-14);
+  font-weight: 500;
+  color: var(--muted-foreground);
+  padding: 0 0 var(--space-2);
+  border-bottom: var(--border-width) solid var(--border);
+}
+.examples td { padding: var(--space-2) 0; border-bottom: var(--border-width) solid var(--border); vertical-align: top; }
+.examples td:first-child { padding-inline-end: var(--space-4); }
+.examples tr:last-child td { border-bottom: 0; }
+.examples button.use {
+  min-height: auto;
+  padding: var(--space-1) var(--space-2);
+  background: transparent;
+  border-color: transparent;
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-weight: 400;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+.examples button.use:hover { background: var(--accent); }
+.examples .long { color: var(--muted-foreground); font-size: var(--text-14); }
+.examples .chip { min-height: 1.5rem; }
+/* An answer can be longer than its column (a chess position is 70
+ * characters): it wraps inside the column instead of widening the page. */
+.examples { table-layout: fixed; }
+.examples .chip, .answer .chip { max-width: 100%; overflow-wrap: anywhere; }
+
+@media (max-width: 599px) {
+  .examples thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .examples tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); align-items: center; border-bottom: var(--border-width) solid var(--border); padding: var(--space-2) 0; }
+  .examples tr:last-child { border-bottom: 0; }
+  .examples td { display: block; padding: 0; border: 0; }
+  .examples td:first-child { padding-inline-end: 0; }
+}
+
+/* Footer */
+
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  padding-top: var(--space-4);
+  font-size: var(--text-14);
+}
+.foot a { color: var(--link); text-decoration: underline; text-decoration-color: var(--border-strong); text-underline-offset: 0.2em; }
+.foot a:hover { color: var(--link-hover); }
+.foot [hidden] { display: none; }
+
+.noscript { margin: var(--space-4); color: var(--muted-foreground); }
+
+/* Forced colours: keep the hairlines and the chips' edges. */
+@media (forced-colors: active) {
+  .card, .chip, button, input[type="text"] { border-color: CanvasText; }
+  .dot { background: Highlight; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; }
+}
+
+/* Touch: every control is 48 px, Material's minimum, whatever rule sized it
+ * above. Last, so nothing overrides it. */
+@media (pointer: coarse) {
+  button, button.ghost, button.primary, button.secondary, .ghost, a.ghost, input[type="text"], .disclosure summary { min-height: var(--touch); }
+  .row { gap: var(--space-2); }
+}
